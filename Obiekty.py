@@ -47,6 +47,13 @@ class Pixel():
         self.speedx = dsx
         self.speedy = dsy
 
+    def nowa_pozycja(self, x = None, y = None):
+        if x is not None:
+            self.x = x
+        if y is not None:
+            self.y = y
+
+
 class Obiekt(Pixel):
     def __init__(self, x: int, y: int, ksztalt: str, witdh: int, height: int, speedx: int = 0, speedy: int = 0, color = None):
         super().__init__(x, y)
@@ -88,8 +95,6 @@ class Obiekt(Pixel):
 
 
 
-            
-        
 
 
 
@@ -126,10 +131,33 @@ class box():
             return True
         return False
     
+    def collisionx2(self, pixel):
+        warunek1 = pixel.x + pixel.speedx - self.witdh + 1
+        warunek2 = pixel.x + pixel.speedx
+        if warunek1 > 0:
+            new_x = self.witdh - warunek1
+            return True, new_x
+        if warunek2 < 0:
+            new_x = -warunek2
+            return True, new_x
+        return False, None
+
     def collisiony(self, pixel):
         if pixel.y + pixel.speedy < 0 or pixel.y + pixel.speedy > self.height - 1:
             return True
         return False
+    
+    def collisiony2(self, pixel):
+        warunek1 = pixel.y + pixel.speedy - self.height + 1
+        warunek2 = pixel.y + pixel.speedy
+        if warunek1 > 0:
+            new_y = self.height - warunek1
+            return True, new_y
+        if warunek2 < 0:
+            new_y = -warunek2
+            return True, new_y
+        return False, None
+
     
     def coliision_pixel(self, pixel):
         for pixel2 in self.pixele:
@@ -164,151 +192,8 @@ class box():
         tab_pixele = obiekt.tab_pixele
         x, y = np.shape(tab_pixele)
 
-            
-
-            
-
-
-
-
-    
-
-
-        
-     
-
     def __str__(self):
         return f'Box o wymiarach {self.witdh}x{self.height}'
     
     def __del__(self):
         print('Box usunięty')
-
-
-class Engine():
-    def __init__(self):
-        self.box = None
-    
-    def run(self):
-        print('Engine działa')
-
-    def create_box(self, witdh = 100, height = 100):
-        self.box = box(witdh, height)
-    
-    def create_pixel(self, x, y, dx = 0, dy = 0):
-        return self.box.create_pixel(x, y, dx, dy)
-    
-    def delete_pixel(self, pixel):
-        self.box.delete_pixel(pixel)
-    
-    def pixele_in_box(self):
-        return self.box.pixele_in_box()
-    
-    def time(self, t, wizualizacja = True, czas = 50, wymiarx = 750, wymiary = 750):
-        for __ in range(t):  
-            positions, speeds = self.box.create_list_of_positions_all_pixels(), self.box.create_list_of_speeds_all_pixels()
-            for pixel in self.box.pixele:
-                id = pixel.id
-
-                collision, pixel2, id2 = self.box.coliision2_pixel(pixel, positions, speeds)
-                if collision:
-                    pixel.speed(speeds[id2][0], speeds[id2][1])
-                    #print('Kolizja z pixelem 2')
-                
-                
-                collisionx = self.box.collisionx(pixel)
-                collisiony = self.box.collisiony(pixel)
-                if collisionx and collisiony:
-                    pixel.speed(-speeds[id][0], -speeds[id][1])
-                    #print('Kolizja x i y')
-                elif collisionx:
-                    pixel.speed(-speeds[id][0], speeds[id][1])
-                    #print('Kolizja')
-
-                elif collisiony:
-                    pixel.speed(speeds[id][0], -speeds[id][1])
-                    #print('Kolizja')
-            
-                pixel.move()
-
-            if not self.__display_image(czas, wymiarx, wymiary):
-                print("wyjście z programu")
-                return 
-
-    def tablica_pixelow(self):
-        tablica = [[(0, 0, 0) for _ in range(self.box.witdh)] for _ in range(self.box.height)]    
-        for pixel in self.box.pixele_in_box():
-            tablica[pixel.y][pixel.x] = pixel.color
-        return tablica
-    
-    
-    def __dodaj_legende(self, obraz):
-
-        font = cv2.FONT_HERSHEY_SIMPLEX 
-        fontScale = 0.5
-        thickness = 1
-
-        for pixel in self.box.pixele:
-            org = (425, 25 + pixel.id*20) 
-            color = (int(pixel.color[0]), int(pixel.color[1]), int(pixel.color[2]))
-
-            s = "pixel: "
-            s += str(pixel.id)
-
-            obraz = cv2.putText(obraz, s, org, font,  
-                   fontScale,color , thickness, cv2.LINE_AA) 
-            
-        return obraz
-
-                
-        
-    def __display_image(self, czas = 50, wymiarx = 750, wymiary = 750):
-        if not hasattr(self, "window_created"):
-            self.window_created = False
-
-        tablica = self.tablica_pixelow()
-        image = np.array(tablica, dtype=np.uint8)
-        resized_image = cv2.resize(image, (wymiarx, wymiary), interpolation=cv2.INTER_NEAREST)
-        
-        resized_image = self.__dodaj_legende(resized_image)
-
-        if not self.window_created:
-            cv2.namedWindow("Image")
-            self.window_created = True
-
-        cv2.imshow("Image", resized_image)
-        key = cv2.waitKey(czas)
-        if key == ord('q'):
-            cv2.destroyAllWindows()
-            return False
-        else:
-            return True
-
-
-    def __del__(self):
-        print('Engine usunięty')
-
-
-
-
-
-engine = Engine()
-engine.create_box(150, 150)
-
-engine.create_pixel(1, 0, 1, 1)
-engine.create_pixel(51, 50, -1, -1)
-engine.create_pixel(51, 50, 1)
-engine.create_pixel(50, 51, 0, 1)
-
-
-
-
-
-
-
-engine.time(1000, False, 1, 750, 750)
-
-
-
-
-
-
