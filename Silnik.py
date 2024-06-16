@@ -1,6 +1,7 @@
 import Obiekty as Ob
 import numpy as np
 import cv2
+from random import randrange, choice
 
 
 class Engine():
@@ -28,7 +29,7 @@ class Engine():
             for pixel in self.box.pixele:
                 id = pixel.id
 
-                collision, pixel2, id2 = self.box.coliision2_pixel(pixel, positions, speeds)
+                collision, __, id2 = self.box.coliision2_pixel(pixel, positions, speeds)
                 if collision:
                     pixel.speed(speeds[id2][0], speeds[id2][1])
                     #print('Kolizja z pixelem 2')
@@ -58,6 +59,14 @@ class Engine():
         for pixel in self.box.pixele_in_box():
             tablica[pixel.y][pixel.x] = pixel.color
         return tablica
+    
+    def create_random_pixel(self, qantity: int):
+        for __ in range(qantity):
+            x = randrange(self.box.witdh)
+            y = randrange(self.box.height)
+            speedy = choice((-1, 1))
+            speedx = choice((-1, 1))
+            self.create_pixel(x, y, speedx, speedy)
     
     
     def __dodaj_legende(self, obraz):
